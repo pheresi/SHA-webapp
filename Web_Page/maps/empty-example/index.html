@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Shake Maps</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/p5.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/addons/p5.dom.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/mappa-mundi@0.0.4"></script>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	<!-- <script src="sketch.js"></script> -->
+	<!-- <script src="plot1.js"></script> -->
+	<!-- <script src="http://www.chartjs.org/dist/2.7.2/Chart.bundle.js"></script> -->
+	<!-- <script src="http://www.chartjs.org/samples/latest/utils.js"></script> -->
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+</head>
+
+<body>
+
+	<style>
+	table {
+			/* font-family: arial, sans-serif; */
+			border-collapse: collapse;
+			/* width: 50%; */
+			font-size: 14px;
+	}
+	td, th {
+			/* border: 1px solid #dddddd; */
+			text-align: left;
+			padding: 8px;
+	}
+	tr:nth-child(even) {
+			background-color: #ffffff;
+	}
+	</style>
+
+
+<div  style="overflow-x:auto;" id="wrapper" align="center">
+	<h3 style="text-align: center"> Shake Maps </h3>
+	<!-- <h5 style="text-align: center">Pick a point on the map for geographic location!</h5> -->
+
+	<table>
+		<tr>
+			<th>Risk Category</th>
+			<th>Site Class</th>
+			<th>Intensity Measure (IM)</th>
+			<th>Period</th>
+			<th>Hazard Level</th>
+			<!-- <th colspan="2" style="text-align: center">Analysis</th> -->
+		</tr>
+		<tr>
+			<td>
+				<select id="riskcategory">
+					<option value="I">I</option>
+					<option value="II">II</option>
+					<option value="III">III</option>
+					<option value="IV">IV</option>
+					<!-- <option value="month">month</option> -->
+				</select>
+			</td>
+			<td>
+				<select id="siteclass">
+					<option value="A">A: Hard rock</option>
+					<option value="B">B: Rock</option>
+					<option value="C">C: Very dense soil and soft rock</option>
+					<option value="D">D: Stiff soil</option>
+					<option value="E">E: Soft clay soil</option>
+					<!-- <option value="F">E: Site response analysis</option> -->
+					<!-- <option value="month">month</option> -->
+				</select>
+			</td>
+			<td>
+				<select id="riskcategory">
+					<option value="IM1">FIV3</option>
+					<option value="IM2">S<sub>a</sub>(T<sub>1</sub>)</option>
+				</select>
+			</td>
+			<td>
+				<select id="periodhazard">
+					<option value="T01">0.1s</option>
+					<option value="T1">1.0s</option>
+				</select>
+			</td>
+			<td>
+				<select id="hazardlevel">
+					<option value="HL1050">10% 50 years</option>
+					<option value="HL250">2% in 50 years</option>
+				</select>
+			</td>
+		</tr>
+	</table>
+	<!-- <div style="width:50%;"> -->
+
+		<div id="mymappa">
+		<script src="sketch.js"></script>
+	</div>
+
+	<!-- <div id="intensitybar" style="width:20%; height: 5px"> -->
+			<!-- <script src="intensitybar.js"></script> -->
+	<!-- </div> -->
+
+	<div id="intensitybar1"> </div>
+</body>
+
+
+
+
+</html>

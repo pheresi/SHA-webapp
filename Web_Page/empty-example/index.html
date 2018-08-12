@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script>
+
+    <script
+    src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous"></script>
+
+    <!-- <script src = "../hazard/usgsfaults.js"> </script> -->
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.sound.min.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+   integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+   crossorigin=""/>
+     <!-- Make sure you put this AFTER Leaflet's CSS -->
+ <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+   integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+   crossorigin=""></script>
+    <meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- <meta name="viewport" content="initial-scale=1, maximum-scale=1"> -->
+    <style> #mapid { height: 300px; } </style>
+    <!-- <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script>
+    function validate(){
+    $('#pybutton').click(function(){
+     $.ajax({
+          type:'get',
+          url:'../../../cgi-enabled/interpolator.py',
+          // url:/var/www/html/cgi-enabled/index.py',
+          cache:false,
+          // data:<if any arguments>,
+          async:true,
+          // dataType:json, //if you want json
+          success: function(data) {
+            console.log('python called is working');
+          },
+          error: function(request, status, error) {
+            console.log('python called is not working');
+          }
+       });
+    });
+    }
+    </script>
+
+  </head>
+  <body>
+
+    <style>
+    table {
+        /* font-family: arial, sans-serif; */
+        border-collapse: collapse;
+        /* width: 60%; */
+        font-size: 14px;
+    }
+    td, th {
+        /* border: 1px solid #dddddd; */
+        text-align: left;
+        padding: 8px;
+    }
+    tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+    </style>
+
+
+	<div style="overflow-x:auto;" id="wrapper" align="center">
+		<h3 style="text-align: center"> Novel Seismic Hazard Curves </h3>
+    <h5 style="text-align: center">Pick a point on the map for geographic location!</h5>
+
+    <table>
+      <tr>
+        <th>Risk Category</th>
+        <th>Site Class</th>
+        <th>Intensity Measure (IM)</th>
+        <th colspan="2" style="text-align: center">Analysis</th>
+      </tr>
+      <tr>
+        <td>
+          <select id="riskcategory">
+            <option value="I">I</option>
+            <option value="II">II</option>
+            <option value="III">III</option>
+            <option value="IV">IV</option>
+            <!-- <option value="month">month</option> -->
+          </select>
+        </td>
+        <td>
+          <select id="siteclass">
+            <option value="A">A: Hard rock</option>
+            <option value="B">B: Rock</option>
+            <option value="C">C: Very dense soil and soft rock</option>
+            <option value="D">D: Stiff soil</option>
+            <option value="E">E: Soft clay soil</option>
+            <!-- <option value="F">E: Site response analysis</option> -->
+            <!-- <option value="month">month</option> -->
+          </select>
+        </td>
+        <td>
+          <select id="riskcategory">
+            <option value="IM1">FIV3</option>
+            <option value="IM2">S<sub>a</sub>(T<sub>1</sub>)</option>
+          </select>
+        </td>
+        <td>
+            <button id="findit" onclick="drawHazardprep()">Curves</button>
+            <!-- <button id="findit" onclick="drawHazard()">RUN</button> -->
+            <!-- <button id="findit" onclick="processFind()">Run</button> -->
+        </td>
+        <td>
+            <button id="findit" onclick="window.location.href='../maps/empty-example/index.html'">Maps</button>
+            <button id="pybutton" onclick="validate()" value="checkvalue">Python TEST</button>
+        </td>
+      </tr>
+      <tr>
+      <td colspan="5" style="text-align: center">
+        <p id="latlong0"> </p>
+      	</div>
+      </td>
+      </tr>
+    </table>
+
+    <!-- <button id="findit">
+      <option value="Gobutton">Run</option>
+    </button> -->
+    <!-- <button id="findit" onclick="processFind()">Run</button> -->
+
+	</div>
+	<!-- <h4>Information pulled from <a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php" target="_blank">USGS API</a> and updated every 5 and 15 minutes</h4> -->
+
+
+     <div id="mapid"></div>
+     <script src="sketch.js"></script>
+
+      <div id="wrapper">
+      <h5 id="s0"> </h5>
+      <h5 id="sp"> </h5>
+      <h5 id="s1"> </h5>
+      <h5 id="s2"> </h5>
+      <h5 id="s3"> </h5>
+      <h5 id="s4"> </h5>
+      <h5 id="s5"> </h5>
+      <h5 id="s6"> </h5>
+    </div>
+    <script src="googleplot.js"></script>
+    <div id="hazard_chart" style="width:100%; height: 400px"></div>
+  </body>
+</html>
