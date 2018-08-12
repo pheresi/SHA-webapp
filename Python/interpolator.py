@@ -4,10 +4,11 @@ import csv
 import os
 from pandas import notnull
 from scipy import interpolate
-# from nose.tools import set_trace
+#from nose.tools import set_trace
 
 # Periods for UHS
-T_UHS_ALL = {'FIV3': (0.1, 1.0), 
+T_UHS_ALL = {'TestIM':(1,2,3),
+             'FIV3': (0.1, 1.0), 
              'Sa':(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0)}
 
 
@@ -86,30 +87,32 @@ def computeUHS(InputFilename):
         IM_UHS[i] = float(interpolateMap(Lat, Lon, GridLat[ndx], 
                           GridLon[ndx], IM_int))
         
-    return T_UHS, IM_UHS
+    return T_UHS, IM_UHS.squeeze()
         
 
 def interpolateMap(LatQ, LonQ, GridLat, GridLon, Z):
     '''
         Interpolates Z, measured at grid points, at (LatQ,LonQ)
     '''
-    f_interp = interpolate.Rbf(GridLon,GridLat,Z,function='linear'
-                               ,smooth=0.0) # Only interpolation
-#        f_interp = interpolate.interp2d(Lons,Lats,Z)
-    return f_interp(LonQ,LatQ)
+#    f_interp = interpolate.Rbf(GridLon,GridLat,Z,function='linear'
+#                               ,smooth=0.0) # Only interpolation
+#    return f_interp(LonQ,LatQ)   
+    return interpolate.griddata((GridLon.squeeze(), GridLat.squeeze()), 
+                                np.array(Z).squeeze(), (LonQ, LatQ),
+                                method='linear')
+
 
 def readHazardCurvesFromOQ(IMname, T):
     '''
         Reads hazard curves at grid points from OQ output files
     '''
-#    print(os.path.abspath(os.path.dirname(__file__)))
     filename = os.path.join(os.path.dirname(__file__), 'OQ-data', IMname, 
                             'hazard_curve-rlz-000-'+IMname+'(%.1f).csv' % T)
     with open(filename, newline='') as f:
         data = csv.reader(f)
         headerLine = next(data)
         IMvaluesLine = next(data)
-        
+
     Time = float(headerLine[4][20:])           # Investigation Time
     values = np.loadtxt(filename,skiprows=2,delimiter=',')
     
