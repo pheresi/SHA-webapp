@@ -8,7 +8,7 @@ from scipy import interpolate
 
 # Periods for UHS
 T_UHS_ALL = {'TestIM':(1,2,3),
-             'FIV3': (0.1, 1.0), 
+             'FIV3': np.arange(0.1, 3.000001, 0.1), 
              'Sa':(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0)}
 
 
@@ -86,7 +86,9 @@ def computeUHS(InputFilename):
         IM_int = [float(np.exp(f(np.log(MAF_UHS)))) for f in f_int]
         IM_UHS[i] = float(interpolateMap(Lat, Lon, GridLat[ndx], 
                           GridLon[ndx], IM_int))
-        
+
+     # Note: Maybe we should apply a smoothing method for the UHS
+ 
     return T_UHS, IM_UHS.squeeze()
         
 
@@ -106,9 +108,9 @@ def readHazardCurvesFromOQ(IMname, T):
     '''
         Reads hazard curves at grid points from OQ output files
     '''
-    filename = os.path.join(os.path.dirname(__file__), 'OQ-data', IMname, 
-                            'SFBA', 'hazard_curve-rlz-000-' + IMname + 
-							'(%.1f).csv' % T)
+    filename = os.path.join(os.path.dirname(__file__), 'OQ-data', IMname,
+                            'SFBA', 'hazard_curve-rlz-000-' + IMname +
+                            '(%.1f)_1.csv' % T)
     with open(filename, newline='') as f:
         data = csv.reader(f)
         headerLine = next(data)
@@ -151,9 +153,12 @@ def main():
             json.dump(dataToExport, outfile, indent=4)
          
     elif action == '-uhs':
+        
+        # Note: Maybe we should apply a smoothing method for the UHS
+        
         T_UHS, IM_UHS = computeUHS(inputfile)
-        dataToExport = {'T': T_UHS, 
-                        'IM': np.ndarray.tolist(IM_UHS.squeeze())}
+        dataToExport = {'T': T_UHS.squeeze().round(2).tolist(), 
+                        'IM': IM_UHS.squeeze().tolist()}
 
         if outputfile.endswith('.json'):
             filename = outputfile
