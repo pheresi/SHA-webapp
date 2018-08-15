@@ -107,7 +107,8 @@ def readHazardCurvesFromOQ(IMname, T):
         Reads hazard curves at grid points from OQ output files
     '''
     filename = os.path.join(os.path.dirname(__file__), 'OQ-data', IMname, 
-                            'hazard_curve-rlz-000-'+IMname+'(%.1f).csv' % T)
+                            'SFBA', 'hazard_curve-rlz-000-' + IMname + 
+							'(%.1f).csv' % T)
     with open(filename, newline='') as f:
         data = csv.reader(f)
         headerLine = next(data)
