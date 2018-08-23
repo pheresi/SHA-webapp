@@ -5,10 +5,9 @@ import numpy as np
 import json
 import csv
 import os
-import cgi
 from pandas import notnull
 from scipy import interpolate
-from pathlib import Path
+#from pathlib import Path
 #from nose.tools import set_trace
 
 # Periods for UHS
@@ -77,6 +76,7 @@ def computeUHS(data1):
                           GridLon[ndx], IM_int))
 
      # Note: Maybe we should apply a smoothing method for the UHS
+     # Answer: We solved this by plotting only some periods
  
     return T_UHS, IM_UHS.squeeze()
         
@@ -99,7 +99,7 @@ def readHazardCurvesFromOQ(IMname, T):
     '''
     filename = os.path.join(os.path.dirname(__file__), 'OQ-data', IMname,
                             'SFBA', 'hazard_curve-rlz-000-' + IMname +
-                            '-%.1f-_1.csv' % T)
+                            '-%.1f-.csv' % T)
     with open(filename, newline='') as f:
         data = csv.reader(f)
         headerLine = next(data)
@@ -121,54 +121,42 @@ def readHazardCurvesFromOQ(IMname, T):
     
 
 def main():
-    # Information comming from Ajax request
-    fs = cgi.FieldStorage();
-
-    sys.stdout.write("Content-Type: application/json")
-
-    sys.stdout.write("\n")
-    sys.stdout.write("\n")
-
-    # get the information coming from data 
-    result = {}
-
-    d = {}
-    for k in fs.keys():
-        d[k] = fs.getvalue(k)
-
-    result['data'] = d
-
-    if d['action'] == '-hc':
-
-        IM_HC, MAF_HC = computeHazardCurve(result['data'])
+    inputfile = sys.argv[1]
+    
+    if inputfile.endswith('.json'):
+        filename = inputfile
+    else:
+        filename = inputfile+'.json'
+        
+    with open(filename) as f:
+        data = json.load(f)
+    
+    action = sys.argv[2]
+    outputfile = sys.argv[3]
+    
+    assert action in ['-hc', '-uhs'], \
+           'Action is not one of -hc or -uhs: ' + action
+    
+    if action == '-hc':
+        IM_HC, MAF_HC = computeHazardCurve(data)
         dataToExport = {'IM': np.ndarray.tolist(IM_HC), 
                         'MAF': np.ndarray.tolist(MAF_HC)}
-
-        # Careful here, returning only IM and MAF, by dumping
-        # "result" the keys can be return as well.                 
-        resultout = {}
-        resultout['IM']  = dataToExport['IM']
-        resultout['MAF'] = dataToExport['MAF']
-
-        sys.stdout.write(json.dumps(resultout,indent=2,allow_nan=True))
-        sys.stdout.close()
-
-    elif d['action'] == '-uhs':
-
-        T_UHS, IM_UHS = computeUHS(result['data'])
+         
+    elif action == '-uhs':
+        
+        # Note: Maybe we should apply a smoothing method for the UHS
+        # Answer: We solved this by plotting only some periods
+        T_UHS, IM_UHS = computeUHS(data)
         dataToExport = {'T': T_UHS, 
                         'IM': IM_UHS.squeeze().tolist()}
 
-        # Careful here, returning only IM and MAF, by dumping
-        # "result" the keys can be return as well.                 
-        resultout = {}
-        resultout['T']  = dataToExport['T']
-        resultout['IM'] = dataToExport['IM']
-
-        # sys.stdout.write("\n")
-
-        sys.stdout.write(json.dumps(resultout,indent=2,allow_nan=True))
-        sys.stdout.close()
+    if outputfile.endswith('.json'):
+        filename = outputfile
+    else:
+        filename = outputfile+'.json'
+        
+    with open(filename, 'w') as outfile:
+        json.dump(dataToExport, outfile, indent=4)
     
 if __name__ == '__main__':
     import sys

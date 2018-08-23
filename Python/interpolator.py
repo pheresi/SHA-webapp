@@ -1,174 +1,59 @@
-import numpy as np
+#!/usr/bin/env python3
+
+import sys
+import cgi
 import json
-import csv
-import os
-from pandas import notnull
-from scipy import interpolate
+import numpy as np
+import interpolator_functions as in_fn
+#from pathlib import Path
 #from nose.tools import set_trace
-
-# Periods for UHS
-T_UHS_ALL = {'TestIM':(1,2,3),
-             'FIV3':(0.1,0.5,1,1.5,2,2.5,3), 
-             'Sa':(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0)}
-
-
-def computeHazardCurve(InputFilename):
-    '''
-        Interpolates the hazard curve at a specific site
-    '''
-    if InputFilename.endswith('.json'):
-        filename = InputFilename
-    else:
-        filename = InputFilename+'.json'
-        
-    with open(filename) as f:
-        data = json.load(f)
-        
-    Lat = data['Lat']
-    Lon = data['Lon']
-    threshold = data['threshold']      # Threshold in °
-    IMname = data['IM']
-    T_HC = data['T']
-    
-    GridLat,GridLon,IM_HC,MAF = readHazardCurvesFromOQ(IMname, T_HC)
-    dists = np.sqrt(np.square(GridLat-Lat) + np.square(GridLon-Lon))
-    ndx = np.argwhere(dists < threshold)
-
-    MAF_HC = np.zeros(IM_HC.shape)
-    for i in range(0,len(IM_HC)):
-        ind_notNull = notnull(MAF[ndx].T[i][0])     # Note that .T: transpose     
-        if all(ind_notNull):
-            ndx_notNull = ndx[ind_notNull]          # Indexes to use
-            MAF_HC[i] = float(interpolateMap(Lat, Lon, GridLat[ndx_notNull], 
-                          GridLon[ndx_notNull], MAF[ndx_notNull].T[i][0]))           
-        else:
-            MAF_HC[i] = float('nan')
-            
-    return IM_HC, MAF_HC
-
-
-def computeUHS(InputFilename):
-    '''
-        Interpolates the hazard curve at every T, to get the UHS
-    '''
-    if InputFilename.endswith('.json'):
-        filename = InputFilename
-    else:
-        filename = InputFilename+'.json'
-        
-    with open(filename) as f:
-        data = json.load(f)
-        
-    Lat = data['Lat']
-    Lon = data['Lon']
-    threshold = data['threshold']      # Threshold in °
-    IMname = data['IM']
-    MAF_UHS = data['MAF']
  
-    try:
-        T_UHS = T_UHS_ALL[IMname]
-    except KeyError:
-        print("IM not supported for UHS")
-        raise
 
-    IM_UHS = np.zeros((len(T_UHS),1))
-    for i,Ti in enumerate(T_UHS):
-        GridLat,GridLon,IM,MAF = readHazardCurvesFromOQ(IMname, Ti)
-        dists = np.sqrt(np.square(GridLat-Lat) + np.square(GridLon-Lon))
-        ndx = np.argwhere(dists < threshold)
-        
-        # Note that we will extrapolate values outside the HC's if needed
-        f_int = [interpolate.interp1d(np.log(maf.squeeze()),np.log(IM), 
-                           kind='linear', fill_value='extrapolate')
-                                         for maf in MAF[ndx]]
-        
-        # IM_int is the map of IM's corresponding to MAF_UHS
-        IM_int = [float(np.exp(f(np.log(MAF_UHS)))) for f in f_int]
-        IM_UHS[i] = float(interpolateMap(Lat, Lon, GridLat[ndx], 
-                          GridLon[ndx], IM_int))
+# Information comming from Ajax request
+fs = cgi.FieldStorage();
 
-     # Note: Maybe we should apply a smoothing method for the UHS
- 
-    return T_UHS, IM_UHS.squeeze()
-        
+sys.stdout.write("Content-Type: application/json")
 
-def interpolateMap(LatQ, LonQ, GridLat, GridLon, Z):
-    '''
-        Interpolates Z, measured at grid points, at (LatQ,LonQ)
-    '''
-#    f_interp = interpolate.Rbf(GridLon,GridLat,Z,function='linear'
-#                               ,smooth=0.0) # Only interpolation
-#    return f_interp(LonQ,LatQ)   
-    return interpolate.griddata((GridLon.squeeze(), GridLat.squeeze()), 
-                                np.array(Z).squeeze(), (LonQ, LatQ),
-                                method='linear')
+sys.stdout.write("\n")
+sys.stdout.write("\n")
 
+# get the information coming from data 
+result = {}
 
-def readHazardCurvesFromOQ(IMname, T):
-    '''
-        Reads hazard curves at grid points from OQ output files
-    '''
-    filename = os.path.join(os.path.dirname(__file__), 'OQ-data', IMname,
-                            'SFBA', 'hazard_curve-rlz-000-' + IMname +
-                            '(%.1f)_1.csv' % T)
-    with open(filename, newline='') as f:
-        data = csv.reader(f)
-        headerLine = next(data)
-        IMvaluesLine = next(data)
+d = {}
+for k in fs.keys():
+    d[k] = fs.getvalue(k)
 
-    Time = float(headerLine[4][20:])           # Investigation Time
-    values = np.loadtxt(filename,skiprows=2,delimiter=',')
-    
-    GridLon = values[:,0]
-    GridLat = values[:,1]
-    PoE = values[:,3:]
-    PoE2 = np.array([[x if x < 1 else float('nan')
-                      for x in np.split(line,len(line))] for line in PoE])
-    
-    IM = np.array(list(float(text[4:]) for text in IMvaluesLine[3:]))
-    MAF = -np.log(1-PoE2)/Time
-        
-    return GridLat,GridLon,IM,MAF
-    
+result['data'] = d
 
-def main():
-    inputfile = sys.argv[1]
-    action = sys.argv[2]
-    outputfile = sys.argv[3]
-    
-    assert action in ['-hc', '-uhs'], \
-           'Action is not one of -hc or -uhs: ' + action
-    
-    if action == '-hc':
-        IM_HC, MAF_HC = computeHazardCurve(inputfile)
-        dataToExport = {'IM': np.ndarray.tolist(IM_HC), 
-                        'MAF': np.ndarray.tolist(MAF_HC)}
+if d['action'] == '-hc':
 
-        if outputfile.endswith('.json'):
-            filename = outputfile
-        else:
-            filename = outputfile+'.json'
-            
-        with open(filename, 'w') as outfile:
-            json.dump(dataToExport, outfile, indent=4)
-         
-    elif action == '-uhs':
-        
-        # Note: Maybe we should apply a smoothing method for the UHS
-        
-        T_UHS, IM_UHS = computeUHS(inputfile)
-        dataToExport = {'T': T_UHS, 
-                        'IM': IM_UHS.squeeze().tolist()}
+    IM_HC, MAF_HC = in_fn.computeHazardCurve(result['data'])
+    dataToExport = {'IM': np.ndarray.tolist(IM_HC), 
+                    'MAF': np.ndarray.tolist(MAF_HC)}
 
-        if outputfile.endswith('.json'):
-            filename = outputfile
-        else:
-            filename = outputfile+'.json'
-            
-        with open(filename, 'w') as outfile:
-            json.dump(dataToExport, outfile, indent=4)
-    
-    
-if __name__ == '__main__':
-    import sys
-    main()
+    # Careful here, returning only IM and MAF, by dumping
+    # "result" the keys can be return as well.                 
+    resultout = {}
+    resultout['IM']  = dataToExport['IM']
+    resultout['MAF'] = dataToExport['MAF']
+
+    sys.stdout.write(json.dumps(resultout,indent=2,allow_nan=True))
+    sys.stdout.close()
+
+elif d['action'] == '-uhs':
+
+    T_UHS, IM_UHS = in_fn.computeUHS(result['data'])
+    dataToExport = {'T': T_UHS, 
+                    'IM': IM_UHS.squeeze().tolist()}
+
+    # Careful here, returning only IM and MAF, by dumping
+    # "result" the keys can be return as well.                 
+    resultout = {}
+    resultout['T']  = dataToExport['T']
+    resultout['IM'] = dataToExport['IM']
+
+    # sys.stdout.write("\n")
+
+    sys.stdout.write(json.dumps(resultout,indent=2,allow_nan=True))
+    sys.stdout.close()
