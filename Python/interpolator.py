@@ -8,7 +8,7 @@ from scipy import interpolate
 
 # Periods for UHS
 T_UHS_ALL = {'TestIM':(1,2,3),
-             'FIV3': np.arange(0.1, 3.000001, 0.1), 
+             'FIV3':(0.1,0.5,1,1.5,2,2.5,3), 
              'Sa':(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0)}
 
 
@@ -157,7 +157,7 @@ def main():
         # Note: Maybe we should apply a smoothing method for the UHS
         
         T_UHS, IM_UHS = computeUHS(inputfile)
-        dataToExport = {'T': T_UHS.squeeze().round(2).tolist(), 
+        dataToExport = {'T': T_UHS, 
                         'IM': IM_UHS.squeeze().tolist()}
 
         if outputfile.endswith('.json'):
