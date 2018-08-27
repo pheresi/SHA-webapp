@@ -13,7 +13,8 @@ from scipy import interpolate
 # Periods for UHS
 T_UHS_ALL = {'TestIM':(1,2,3),
              'FIV3':(0.1,0.5,1,1.5,2,2.5,3), 
-             'Sa':(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0)}
+             'SA':(0.1,0.3,0.5,0.8,1.0,1.3,1.5,1.8,2,2.5,3,3.5,4,4.5,5),
+             'SAAVG':(0.1,0.5,1,1.5,2,2.5,3)}
 
 
 def computeHazardCurve(data1):
@@ -97,15 +98,15 @@ def readHazardCurvesFromOQ(IMname, T):
     '''
         Reads hazard curves at grid points from OQ output files
     '''
-    filename = os.path.join(os.path.dirname(__file__), 'OQ-data', IMname,
-                            'SFBA', 'hazard_curve-rlz-000-' + IMname +
+    filename = os.path.join(os.path.dirname(__file__), 'OQ-data', 'SFBA',
+                            IMname, 'hazard_curve-mean-' + IMname +
                             '-%.1f-.csv' % T)
     with open(filename, newline='') as f:
         data = csv.reader(f)
         headerLine = next(data)
         IMvaluesLine = next(data)
 
-    Time = float(headerLine[4][20:])           # Investigation Time
+    Time = float(headerLine[1][20:])           # Investigation Time
     values = np.loadtxt(filename,skiprows=2,delimiter=',')
     
     GridLon = values[:,0]
