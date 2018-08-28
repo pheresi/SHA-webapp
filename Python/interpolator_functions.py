@@ -78,7 +78,6 @@ def computeUHS(data1):
 
      # Note: Maybe we should apply a smoothing method for the UHS
      # Answer: We solved this by plotting only some periods
- 
     return T_UHS, IM_UHS.squeeze()
         
 
@@ -112,9 +111,8 @@ def readHazardCurvesFromOQ(IMname, T):
     GridLon = values[:,0]
     GridLat = values[:,1]
     PoE = values[:,3:]
-    PoE2 = np.array([[x if x < 1 else float('nan')
+    PoE2 = np.array([[x.squeeze() if x < 1 else float('nan')
                       for x in np.split(line,len(line))] for line in PoE])
-    
     IM = np.array(list(float(text[4:]) for text in IMvaluesLine[3:]))
     MAF = -np.log(1-PoE2)/Time
         
