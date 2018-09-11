@@ -76,9 +76,16 @@ def computeUHS(data1):
         IM_UHS[i] = float(interpolateMap(Lat, Lon, GridLat[ndx], 
                           GridLon[ndx], IM_int))
 
-     # Note: Maybe we should apply a smoothing method for the UHS
-     # Answer: We solved this by plotting only some periods
-    return T_UHS, IM_UHS.squeeze()
+    # Note: Maybe we should apply a smoothing method for the UHS
+    # Answer: We solved this by plotting only some periods
+    IM_UHS = IM_UHS.squeeze()
+    
+    # If IM is FIV3, then include FIV3 = 0 for T = 0
+    if IMname == 'FIV3':
+        T_UHS = (0,) + T_UHS
+        IM_UHS = np.insert(IM_UHS, 0, 0)
+        
+    return T_UHS, IM_UHS
         
 
 def interpolateMap(LatQ, LonQ, GridLat, GridLon, Z):
