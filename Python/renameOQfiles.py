@@ -2,12 +2,13 @@ import os
 from pathlib import Path
 
 IMname = 'SAAVG'
+Soil = 'D'
 Zone = 'SFBA'
 
 
 #%% Rename everything
 
-path = Path('OQ-data/' + Zone + '/' + IMname)
+path = Path('OQ-data/' + Zone + '/' + IMname '/' + Soil)
 files = os.listdir(path)
 
 for file in files:
