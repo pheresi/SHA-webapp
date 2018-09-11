@@ -17,17 +17,18 @@ T_UHS_ALL = {'TestIM':(1,2,3),
              'SAAVG':(0.1,0.5,1,1.5,2,2.5,3)}
 
 
-def computeHazardCurve(data1):
+def computeHazardCurve(dataInput):
     '''
         Interpolates the hazard curve at a specific site
     '''
-    Lat = float(data1['Lat'])
-    Lon = float(data1['Lon'])
-    threshold = float(data1['threshold'])      # Threshold in °
-    IMname = data1['IM']
-    T_HC = float(data1['T'])
+    Lat = float(dataInput['Lat'])
+    Lon = float(dataInput['Lon'])
+    threshold = float(dataInput['threshold'])      # Threshold in °
+    IMname = dataInput['IM']
+    T_HC = float(dataInput['T'])
+    soil = dataInput['soil']
     
-    GridLat,GridLon,IM_HC,MAF = readHazardCurvesFromOQ(IMname, T_HC)
+    GridLat,GridLon,IM_HC,MAF = readHazardCurvesFromOQ(IMname, soil, T_HC)
     dists = np.sqrt(np.square(GridLat-Lat) + np.square(GridLon-Lon))
     ndx = np.argwhere(dists < threshold)
 
@@ -44,16 +45,17 @@ def computeHazardCurve(data1):
     return IM_HC, MAF_HC
 
 
-def computeUHS(data1):
+def computeUHS(dataInput):
     '''
         Interpolates the hazard curve at every T, to get the UHS
     ''' 
-    Lat = float(data1['Lat'])
-    Lon = float(data1['Lon'])
-    threshold = float(data1['threshold'])      # Threshold in °
-    IMname = data1['IM']
-    MAF_UHS = float(data1['MAF'])
- 
+    Lat = float(dataInput['Lat'])
+    Lon = float(dataInput['Lon'])
+    threshold = float(dataInput['threshold'])      # Threshold in °
+    IMname = dataInput['IM']
+    MAF_UHS = float(dataInput['MAF'])
+    soil = dataInput['soil']
+    
     try:
         T_UHS = T_UHS_ALL[IMname]
     except KeyError:
@@ -62,7 +64,7 @@ def computeUHS(data1):
 
     IM_UHS = np.zeros((len(T_UHS),1))
     for i,Ti in enumerate(T_UHS):
-        GridLat,GridLon,IM,MAF = readHazardCurvesFromOQ(IMname, Ti)
+        GridLat,GridLon,IM,MAF = readHazardCurvesFromOQ(IMname, soil, Ti)
         dists = np.sqrt(np.square(GridLat-Lat) + np.square(GridLon-Lon))
         ndx = np.argwhere(dists < threshold)
         
@@ -100,12 +102,12 @@ def interpolateMap(LatQ, LonQ, GridLat, GridLon, Z):
                                 method='linear')
 
 
-def readHazardCurvesFromOQ(IMname, T):
+def readHazardCurvesFromOQ(IMname, soil, T):
     '''
         Reads hazard curves at grid points from OQ output files
     '''
     filename = os.path.join(os.path.dirname(__file__), 'OQ-data', 'SFBA',
-                            IMname, 'hazard_curve-mean-' + IMname +
+                            IMname, soil, 'hazard_curve-mean-' + IMname +
                             '-%.1f-.csv' % T)
     with open(filename, newline='') as f:
         data = csv.reader(f)
