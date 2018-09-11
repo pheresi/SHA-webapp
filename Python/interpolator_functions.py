@@ -13,19 +13,19 @@ from scipy import interpolate
 # Periods for UHS
 T_UHS_ALL = {'TestIM':(1,2,3),
              'FIV3':(0.1,0.5,1,1.5,2,2.5,3), 
-             'SA':(0.1,0.3,0.5,0.8,1.0,1.3,1.5,1.8,2,2.5,3,3.5,4,4.5,5),
+             'SA':(0,0.1,0.3,0.5,0.8,1.0,1.3,1.5,1.8,2,2.5,3,3.5,4,4.5,5),
              'SAAVG':(0.1,0.5,1,1.5,2,2.5,3)}
 
 
-def computeHazardCurve(data1):
+def computeHazardCurve(dataInput):
     '''
         Interpolates the hazard curve at a specific site
     '''
-    Lat = float(data1['Lat'])
-    Lon = float(data1['Lon'])
-    threshold = float(data1['threshold'])      # Threshold in °
-    IMname = data1['IM']
-    T_HC = float(data1['T'])
+    Lat = float(dataInput['Lat'])
+    Lon = float(dataInput['Lon'])
+    threshold = float(dataInput['threshold'])      # Threshold in °
+    IMname = dataInput['IM']
+    T_HC = float(dataInput['T'])
     
     GridLat,GridLon,IM_HC,MAF = readHazardCurvesFromOQ(IMname, T_HC)
     dists = np.sqrt(np.square(GridLat-Lat) + np.square(GridLon-Lon))
@@ -44,15 +44,15 @@ def computeHazardCurve(data1):
     return IM_HC, MAF_HC
 
 
-def computeUHS(data1):
+def computeUHS(dataInput):
     '''
         Interpolates the hazard curve at every T, to get the UHS
     ''' 
-    Lat = float(data1['Lat'])
-    Lon = float(data1['Lon'])
-    threshold = float(data1['threshold'])      # Threshold in °
-    IMname = data1['IM']
-    MAF_UHS = float(data1['MAF'])
+    Lat = float(dataInput['Lat'])
+    Lon = float(dataInput['Lon'])
+    threshold = float(dataInput['threshold'])      # Threshold in °
+    IMname = dataInput['IM']
+    MAF_UHS = float(dataInput['MAF'])
  
     try:
         T_UHS = T_UHS_ALL[IMname]

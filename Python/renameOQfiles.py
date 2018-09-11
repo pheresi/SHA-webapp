@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-IMname = 'SAAVG'
+IMname = 'SA'
 Zone = 'SFBA'
 
 
