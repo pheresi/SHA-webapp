@@ -21,8 +21,7 @@ MAF_FAKE = np.array([[float('nan'),8E-2,8E-3,8E-4,0],
                      [float('nan'),8E-2,8E-3,8E-4,0],
                      [float('nan'),6E-2,6E-3,6E-4,0]])
 
-FakeHCtext = "# source_model_tree_path=('ltbrTrueMean',), gsim_tree_path=" +\
-"('b1',), investigation_time=1.0, imt=\"TestIM(1.0)\"\n" +\
+FakeHCtext = "# mean, investigation_time=1.0, imt=\"TestIM(1.0)\"\n" +\
 "lon,lat,depth,poe-1,poe-10,poe-100,poe-1000,poe-10000\n" +\
 "-0.1,0,0,1,7.69E-02,7.97E-03,8.00E-04,0.00E+00\n" +\
 "-0.1,0.2,0,1,5.82E-02,5.98E-03,6.00E-04,0.00E+00\n" +\
@@ -31,8 +30,7 @@ FakeHCtext = "# source_model_tree_path=('ltbrTrueMean',), gsim_tree_path=" +\
 "-0.1,-0.2,0,1,7.69E-02,7.97E-03,8.00E-04,0.00E+00\n" +\
 "0.1,-0.2,0,1,5.82E-02,5.98E-03,6.00E-04,0.00E+00"
 
-FakeHCtext2 = "# source_model_tree_path=('ltbrTrueMean',), gsim_tree_path=" +\
-"('b1',), investigation_time=1.0, imt=\"TestIM(2.0)\"\n" +\
+FakeHCtext2 = "# mean, investigation_time=1.0, imt=\"TestIM(2.0)\"\n" +\
 "lon,lat,depth,poe-2,poe-20,poe-200,poe-2000,poe-20000\n" +\
 "-0.1,0,0,1,7.69E-02,7.97E-03,8.00E-04,0.00E+00\n" +\
 "-0.1,0.2,0,1,5.82E-02,5.98E-03,6.00E-04,0.00E+00\n" +\
@@ -41,8 +39,7 @@ FakeHCtext2 = "# source_model_tree_path=('ltbrTrueMean',), gsim_tree_path=" +\
 "-0.1,-0.2,0,1,7.69E-02,7.97E-03,8.00E-04,0.00E+00\n" +\
 "0.1,-0.2,0,1,5.82E-02,5.98E-03,6.00E-04,0.00E+00"
 
-FakeHCtext3 = "# source_model_tree_path=('ltbrTrueMean',), gsim_tree_path=" +\
-"('b1',), investigation_time=1.0, imt=\"TestIM(3.0)\"\n" +\
+FakeHCtext3 = "# mean, investigation_time=1.0, imt=\"TestIM(3.0)\"\n" +\
 "lon,lat,depth,poe-0.5,poe-5,poe-50,poe-500,poe-5000\n" +\
 "-0.1,0,0,1,7.69E-02,7.97E-03,8.00E-04,0.00E+00\n" +\
 "-0.1,0.2,0,1,5.82E-02,5.98E-03,6.00E-04,0.00E+00\n" +\
@@ -54,11 +51,11 @@ FakeHCtext3 = "# source_model_tree_path=('ltbrTrueMean',), gsim_tree_path=" +\
 class interpolatorTestCase(unittest.TestCase):
     
     def test_computeHC(self):
-        fakeHCname = 'hazard_curve-rlz-000-TestIM-1.0-.csv'
+        fakeHCname = 'hazard_curve-mean-TestIM-1.0-.csv'
         fake_HCfromOQ = open(fakeHCname, "w")
         fake_HCfromOQ.write(FakeHCtext)
         fake_HCfromOQ.close()
-        data_folder = Path("OQ-data/TestIM/SFBA/")
+        data_folder = Path("OQ-data/SFBA/TestIM/D/")
         os.rename(fakeHCname, data_folder / fakeHCname)
         
         LonQs = (0,-0.1,0,0.1,0,0)
@@ -77,6 +74,7 @@ class interpolatorTestCase(unittest.TestCase):
             dataInput['threshold'] = '0.5'
             dataInput['IM'] = 'TestIM'
             dataInput['T'] = '1'
+            dataInput['soil'] = 'D'
                         
 #            with um.patch('interpolator.readHazardCurvesFromOQ',return_value= 
 #                             (GridLat_FAKE, GridLon_FAKE, IM_FAKE, MAF_FAKE)):           
@@ -102,29 +100,27 @@ class interpolatorTestCase(unittest.TestCase):
                              
         
     def test_computeUHS(self):
-        fakeHCname1 = 'hazard_curve-rlz-000-TestIM-1.0-.csv'
+        fakeHCname1 = 'hazard_curve-mean-TestIM-1.0-.csv'
         fake_HCfromOQ = open(fakeHCname1, "w")
         fake_HCfromOQ.write(FakeHCtext)
         fake_HCfromOQ.close()
-        data_folder = Path("OQ-data/TestIM/SFBA/")
+        data_folder = Path("OQ-data/SFBA/TestIM/D")
         os.rename(fakeHCname1, data_folder / fakeHCname1)        
-        fakeHCname2 = 'hazard_curve-rlz-000-TestIM-2.0-.csv'
+        fakeHCname2 = 'hazard_curve-mean-TestIM-2.0-.csv'
         fake_HCfromOQ = open(fakeHCname2, "w")
         fake_HCfromOQ.write(FakeHCtext2)
         fake_HCfromOQ.close()
-        data_folder = Path("OQ-data/TestIM/SFBA/")
         os.rename(fakeHCname2, data_folder / fakeHCname2)
-        fakeHCname3 = 'hazard_curve-rlz-000-TestIM-3.0-.csv'
+        fakeHCname3 = 'hazard_curve-mean-TestIM-3.0-.csv'
         fake_HCfromOQ = open(fakeHCname3, "w")
         fake_HCfromOQ.write(FakeHCtext3)
         fake_HCfromOQ.close()
-        data_folder = Path("OQ-data/TestIM/SFBA/")
         os.rename(fakeHCname3, data_folder / fakeHCname3) 
 
         LonQs = (0,-0.1,0,0.1,0,0)
         LatQs = (0,0.1,0.1,0.1,0.2,0.05)
         MAF_UHS = (7e-3,7e-3,6e-3,5e-3,5e-3,6.5e-3)
-        IM_UHS_expected = np.array((100,200.2,49.8))
+        IM_UHS_expected = np.array((100,200,50))
         IM_UHS_all = []
         dataInput = {}
         for LonQ,LatQ,maf in zip(LonQs,LatQs,MAF_UHS):  
@@ -132,7 +128,8 @@ class interpolatorTestCase(unittest.TestCase):
             dataInput['Lon'] = str(LonQ)
             dataInput['threshold'] = '0.5'
             dataInput['IM'] = 'TestIM'
-            dataInput['MAF'] = str(maf)   
+            dataInput['MAF'] = str(maf)
+            dataInput['soil'] = 'D'
             T_UHS, IM_UHS = inter.computeUHS(dataInput)
             IM_UHS_all.append(IM_UHS)
             
